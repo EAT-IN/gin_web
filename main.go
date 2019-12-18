@@ -1,33 +1,29 @@
 package main
 
 import (
-	"fmt"
 	"github.com/gin-gonic/gin"
 )
 
 func Index(c *gin.Context) {
-	msg := "小王子"
-	c.HTML(200, "index.tmpl", msg)
-
-}
-
-func Home(c *gin.Context) {
-	msg := "小王子"
-	c.HTML(200, "home.tmpl", msg)
+	c.HTML(200, "index.html", map[string]string{"title": "index"})
 
 }
 
 func main() {
 
 	router := gin.Default()
-	router.LoadHTMLGlob("./templates/*")
 
-	router.GET("/index", Index)
-	router.GET("/home", Home)
+	// 加载模版文件和静态文件
+	router.Static("/static", "./static")
+	router.LoadHTMLGlob("./template/*")
 
-	if err := router.Run(); err != nil {
-		fmt.Println(err.Error())
-		return
-	}
+	router.GET("/", Index)
+	router.GET("/login", func(c *gin.Context) {
+		c.JSON(200, gin.H{
+			"msg": "登录成功!!!",
+		})
+	})
+
+	router.Run()
 
 }
