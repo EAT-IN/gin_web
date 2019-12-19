@@ -1,29 +1,46 @@
 package main
 
 import (
+	"net/http"
+	"time"
+
 	"github.com/gin-gonic/gin"
+	"github.com/gin-gonic/gin/binding"
+	"gopkg.in/go-playground/validator.v9"
 )
 
-func Index(c *gin.Context) {
-	c.HTML(200, "index.html", map[string]string{"title": "index"})
+type Booking struct {
+	// 这里定义了一个表单,必须要满足的条件时,不能为空.并且日期需要大于今天 ,这里的time_format 是对前端提交的时间进行格式化,变成time.Time类型
+	CheckIn time.Time `form:"check_in" json:"check_in "binding:"required,bookabledate" time_format:"2006-01-02"`
+}
 
+func bookableDate(fl validator.FieldLevel) bool {
+	date, ok := fl.Field().Interface().(time.Time)
+	if ok {
+		today := time.Now()
+		if today.After(date) {
+			return false
+		}
+	}
+	return true
 }
 
 func main() {
+	route := gin.Default()
 
-	router := gin.Default()
+	if v, ok := binding.Validator.Engine().(*validator.Validate); ok {
+		v.RegisterValidation("bookabledate", bookableDate)
+	}
 
-	// 加载模版文件和静态文件
-	router.Static("/static", "./static")
-	router.LoadHTMLGlob("./template/*")
+	route.GET("/bookable", getBookable)
+	route.Run(":8085")
+}
 
-	router.GET("/", Index)
-	router.GET("/login", func(c *gin.Context) {
-		c.JSON(200, gin.H{
-			"msg": "登录成功!!!",
-		})
-	})
-
-	router.Run()
-
+func getBookable(c *gin.Context) {
+	var b Booking
+	if err := c.ShouldBindQuery(&b); err == nil {
+		c.JSON(http.StatusOK, b)
+	} else {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+	}
 }
