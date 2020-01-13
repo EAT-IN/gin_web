@@ -29,11 +29,15 @@ func main() {
 	route := gin.Default()
 
 	if v, ok := binding.Validator.Engine().(*validator.Validate); ok {
-		v.RegisterValidation("bookabledate", bookableDate)
+		if err := v.RegisterValidation("bookabledate", bookableDate); err != nil {
+			return
+		}
 	}
 
 	route.GET("/bookable", getBookable)
-	route.Run(":8085")
+	if err := route.Run(":8085"); err != nil {
+		return
+	}
 }
 
 func getBookable(c *gin.Context) {
