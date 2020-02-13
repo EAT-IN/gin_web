@@ -1,50 +1,29 @@
 package main
 
 import (
-	"net/http"
-	"time"
-
+	"fmt"
 	"github.com/gin-gonic/gin"
-	"github.com/gin-gonic/gin/binding"
-	"gopkg.in/go-playground/validator.v9"
 )
 
-type Booking struct {
-	// 这里定义了一个表单,必须要满足的条件时,不能为空.并且日期需要大于今天 ,这里的time_format 是对前端提交的时间进行格式化,变成time.Time类型
-	CheckIn time.Time `form:"check_in" json:"check_in "binding:"required,bookabledate" time_format:"2006-01-02"`
-}
-
-func bookableDate(fl validator.FieldLevel) bool {
-	date, ok := fl.Field().Interface().(time.Time)
-	if ok {
-		today := time.Now()
-		if today.After(date) {
-			return false
-		}
-	}
-	return true
-}
-
 func main() {
-	route := gin.Default()
+	r := gin.Default()
 
-	if v, ok := binding.Validator.Engine().(*validator.Validate); ok {
-		if err := v.RegisterValidation("bookabledate", bookableDate); err != nil {
-			return
+	r.GET("/cookie", func(c *gin.Context) {
+		// 先获取cookie值，如果没有就设定一个cookie
+		name, err := c.Cookie("name")
+		if err != nil {
+			name = "not set"
+			// name:cookie的名字
+			// value：cookie的值
+			// maxage：cookie的有效时间， 单位为秒
+			// path是指 cookie所在的目录
+			// domain 域名
+			// secure 是否只能通过https 访问
+			// httpone 是否允许别人通过js获取自己的cookie
+			c.SetCookie("name", "xmzhang", 3600, "/", "localhost", false, true)
 		}
-	}
+		fmt.Println("cookie的值为：", name)
+	})
 
-	route.GET("/bookable", getBookable)
-	if err := route.Run(":8085"); err != nil {
-		return
-	}
-}
-
-func getBookable(c *gin.Context) {
-	var b Booking
-	if err := c.ShouldBindQuery(&b); err == nil {
-		c.JSON(http.StatusOK, b)
-	} else {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-	}
+	r.Run()
 }
