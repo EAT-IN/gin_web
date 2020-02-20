@@ -68,5 +68,6 @@ func main() {
 	for _, v := range data {
 		fmt.Println(v.CreatedAt)
 	}
+	// 如果不适用gorm.model继承就不存在软删除了
 
 }
