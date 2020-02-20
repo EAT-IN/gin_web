@@ -38,7 +38,12 @@ func InitDB() {
 
 func main() {
 	InitDB()
-	d := &Demo{Name: "xmzhang", Age: 14}
+	d := &Demo{
+		Model: gorm.Model{ID: 1},
+		Name:  "xmzhang",
+		Age:   24,
+		High:  170,
+	}
 	fmt.Println(DB.NewRecord(d))
 	// 增
 	DB.Create(d)
@@ -54,10 +59,12 @@ func main() {
 
 	//删, 逻辑删除，看delete_at的时间就知道了
 	DB.Where("id=?", 1).Delete(&a)
+	// 真实删除的话，需要加上Unscoped()
+	DB.Unscoped().Where("id>?", 1).Delete(&a)
 
-	//查
+	//查. 如果想查询到逻辑删除的数据 加上Unscoped()
 	var data []Demo
-	DB.Where("id != ?", 1).Find(&data)
+	DB.Unscoped().Find(&data)
 	for _, v := range data {
 		fmt.Println(v.CreatedAt)
 	}
