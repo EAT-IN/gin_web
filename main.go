@@ -1,48 +1,23 @@
 package main
 
 import (
+	"gin_web/config"
+	"gin_web/model"
+	"gin_web/router"
 	"github.com/gin-gonic/gin"
-	"net/http"
 )
 
 func main() {
-	r := gin.Default()
 
-	r.Static("/static", "static")
-	r.StaticFile("favicon.ico", "template/favicon.ico")
-
-	r.LoadHTMLGlob("template/*")
-
-	r.GET("/", func(c *gin.Context) {
-		c.HTML(http.StatusOK, "index.html", nil)
-	})
-
-	v1 := r.Group("/v1")
-	{
-		// 增加事项
-		v1.POST("/todo", func(c *gin.Context) {
-
-		})
-
-		// 查看事项
-		v1.GET("/todo", func(c *gin.Context) {
-
-		})
-		v1.GET("/todo/:id", func(c *gin.Context) {
-
-		})
-
-		// 更改事项
-		v1.PUT("/todo/:id", func(c *gin.Context) {
-
-		})
-
-		// 删除事项
-		v1.DELETE("/todo/:id", func(c *gin.Context) {
-
-		})
-
-	}
-
+	//初始化配置
+	config.InitCnf("dev")
+	// 初始化数据库
+	model.InitDB()
+	defer model.DB.Close()
+	// 设置gin开发模式
+	gin.SetMode(config.Configs.Key("gin_mode").String())
+	// 初始化路由
+	r := router.InitRouter()
+	// 启动服务器
 	r.Run(":5000")
 }
