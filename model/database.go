@@ -3,7 +3,7 @@ package model
 import (
 	"gin_web/config"
 	"github.com/jinzhu/gorm"
-	_ "github.com/jinzhu/gorm/dialects/mysql"
+	_ "github.com/jinzhu/gorm/dialects/sqlite"
 )
 
 var DB *gorm.DB

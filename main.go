@@ -10,7 +10,7 @@ import (
 func main() {
 
 	//初始化配置
-	config.InitCnf("dev")
+	config.InitCnf("online")
 	// 初始化数据库
 	model.InitDB()
 	defer model.DB.Close()
